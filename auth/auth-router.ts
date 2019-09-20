@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import bcryptjs from 'bcryptjs';
 import Users from '../users/user-model';
+import Secrets from './config/secrets';
+import { User } from '../users/types';
 
 const router = require('express').Router();
 
@@ -32,15 +36,26 @@ const validateUser = async (
   }
 };
 
+const generateToken = (user: User): string => {
+  const payload = {
+    username: user.username,
+  };
+  const options = {
+    expiresIn: '1d',
+  };
+  return jwt.sign(payload, Secrets.jwtSecret, options);
+};
+
 router.use(validateUser);
 
 router.post(
   '/register',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { username, password } = req.body;
+      const { username } = req.body;
+      const password = bcryptjs.hashSync(req.body.password);
       const saved = await Users.add({ username, password });
-      res.status(200).json(saved);
+      res.status(201).json(saved);
     } catch (err) {
       next(err);
     }

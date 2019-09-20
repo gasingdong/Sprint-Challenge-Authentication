@@ -20,6 +20,7 @@ server.use(express.json());
 server.use('/api/auth', authRouter);
 server.use('/api/jokes', authenticate, jokesRouter);
 
+// Generic error handler for unexpected server errors
 const errorHandler = (
   err: ErrorRequestHandler,
   req: Request,

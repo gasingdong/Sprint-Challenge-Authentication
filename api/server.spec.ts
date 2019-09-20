@@ -56,7 +56,7 @@ describe('server.js', () => {
       const res = await request(server)
         .post('/api/auth/register')
         .send(dummyUser);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(201);
       const results = await db('users');
       expect(results).toHaveLength(2);
     });
