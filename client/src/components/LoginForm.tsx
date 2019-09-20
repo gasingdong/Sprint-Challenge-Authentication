@@ -1,5 +1,6 @@
 import React from 'react';
 import { withFormik, Form, Field, FormikProps } from 'formik';
+import { RouteComponentProps } from 'react-router-dom';
 import * as Yup from 'yup';
 import axios from 'axios';
 
@@ -30,7 +31,10 @@ const LoginForm = ({
   );
 };
 
-const FormikLoginForm = withFormik<LoginProps, LoginValues>({
+const FormikLoginForm = withFormik<
+  LoginProps & RouteComponentProps,
+  LoginValues
+>({
   mapPropsToValues({
     initialUsername,
     initialPassword,
@@ -53,6 +57,7 @@ const FormikLoginForm = withFormik<LoginProps, LoginValues>({
         values
       );
       console.log(loginUser);
+      localStorage.setItem('token', loginUser.data.token);
     } catch (err) {
       console.log(err);
     }
