@@ -1,8 +1,9 @@
-const axios = require('axios');
+import axios from 'axios';
+import { Request, Response } from 'express';
 
 const router = require('express').Router();
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   const requestOptions = {
     headers: { accept: 'application/json' },
   };
@@ -17,4 +18,4 @@ router.get('/', (req, res) => {
     });
 });
 
-module.exports = router;
+export default router;
