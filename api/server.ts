@@ -1,4 +1,9 @@
-import express from 'express';
+import express, {
+  ErrorRequestHandler,
+  Request,
+  Response,
+  NextFunction,
+} from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 
@@ -14,5 +19,20 @@ server.use(express.json());
 
 server.use('/api/auth', authRouter);
 server.use('/api/jokes', authenticate, jokesRouter);
+
+const errorHandler = (
+  err: ErrorRequestHandler,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (res.headersSent) {
+    next(err);
+  }
+  console.log(err);
+  res.status(500).json({ error: 'Unexpected server error.' });
+};
+
+server.use(errorHandler);
 
 export default server;

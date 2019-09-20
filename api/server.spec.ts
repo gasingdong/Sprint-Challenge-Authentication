@@ -14,11 +14,6 @@ beforeAll(async () => {
 });
 
 describe('server.js', () => {
-  // Delete the table contents before each test
-  beforeEach(async () => {
-    await db('users').truncate();
-  });
-
   it('should set environment to testing', () => {
     expect(process.env.DB_ENV).toBe('testing');
   });
@@ -31,7 +26,7 @@ describe('server.js', () => {
 
     it('returns 200 OK after logging in', async () => {
       const { token } = (await request(server)
-        .post('/api/login')
+        .post('/api/auth/login')
         .send(testUser)).body;
       const res = await request(server)
         .get('/api/jokes')
@@ -43,14 +38,14 @@ describe('server.js', () => {
   describe('login endpoint', () => {
     it('should return JSON', async () => {
       const res = await request(server)
-        .post('/api/login')
+        .post('/api/auth/login')
         .send(testUser);
       expect(res.type).toMatch(/json/i);
     });
 
     it('should receive a 200 OK on valid login', async () => {
       const res = await request(server)
-        .post('/api/login')
+        .post('/api/auth/login')
         .send(testUser);
       expect(res.status).toBe(200);
     });
@@ -59,7 +54,7 @@ describe('server.js', () => {
   describe('register endpoint', () => {
     it('should add user to database', async () => {
       const res = await request(server)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send(dummyUser);
       expect(res.status).toBe(200);
       const results = await db('users');
@@ -68,7 +63,7 @@ describe('server.js', () => {
 
     it('should fail on invalid entry', async () => {
       const res = await request(server)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({ username: 'nopassword' });
       expect(res.status).toBe(400);
     });
