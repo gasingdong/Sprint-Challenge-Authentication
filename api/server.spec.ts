@@ -3,14 +3,12 @@ import request from 'supertest';
 import db from '../database/db-config';
 import server from './server';
 
-// Dummy users for testing purposes
+// Dummy user for testing purposes
 const testUser = { username: 'test', password: 'test' };
-const dummyUser = { username: 'dummy', password: 'dummy' };
 
 // Initiate the migrations for the testing environment
 beforeAll(async () => {
   await db.migrate.latest();
-  await db.seed.run();
 });
 
 describe('server.js', () => {
@@ -18,20 +16,21 @@ describe('server.js', () => {
     expect(process.env.DB_ENV).toBe('testing');
   });
 
-  describe('jokes endpoint', () => {
-    it('returns 401 FORBIDDEN before logging in', async () => {
-      const res = await request(server).get('/api/jokes');
-      expect(res.status).toBe(401);
+  describe('register endpoint', () => {
+    it('should add user to database', async () => {
+      const res = await request(server)
+        .post('/api/auth/register')
+        .send(testUser);
+      expect(res.status).toBe(201);
+      const results = await db('users');
+      expect(results).toHaveLength(1);
     });
 
-    it('returns 200 OK after logging in', async () => {
-      const { token } = (await request(server)
-        .post('/api/auth/login')
-        .send(testUser)).body;
+    it('should fail on invalid entry', async () => {
       const res = await request(server)
-        .get('/api/jokes')
-        .auth(token, { type: 'bearer' });
-      expect(res.status).toBe(200);
+        .post('/api/auth/register')
+        .send({ username: 'nopassword' });
+      expect(res.status).toBe(400);
     });
   });
 
@@ -51,21 +50,20 @@ describe('server.js', () => {
     });
   });
 
-  describe('register endpoint', () => {
-    it('should add user to database', async () => {
-      const res = await request(server)
-        .post('/api/auth/register')
-        .send(dummyUser);
-      expect(res.status).toBe(201);
-      const results = await db('users');
-      expect(results).toHaveLength(2);
+  describe('jokes endpoint', () => {
+    it('returns 401 FORBIDDEN before logging in', async () => {
+      const res = await request(server).get('/api/jokes');
+      expect(res.status).toBe(401);
     });
 
-    it('should fail on invalid entry', async () => {
+    it('returns 200 OK after logging in', async () => {
+      const { token } = (await request(server)
+        .post('/api/auth/login')
+        .send(testUser)).body;
       const res = await request(server)
-        .post('/api/auth/register')
-        .send({ username: 'nopassword' });
-      expect(res.status).toBe(400);
+        .get('/api/jokes')
+        .set('Authorization', token);
+      expect(res.status).toBe(200);
     });
   });
 });
